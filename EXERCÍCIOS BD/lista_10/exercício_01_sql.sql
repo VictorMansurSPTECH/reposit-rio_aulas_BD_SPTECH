@@ -1,0 +1,132 @@
+CREATE DATABASE biblioteca_comunitaria;
+USE biblioteca_comunitaria;
+ 
+CREATE TABLE genero (
+    idgenero INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(45) NOT NULL
+);
+ 
+CREATE TABLE livro (
+    idlivro INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    titulo VARCHAR(80) NOT NULL,
+    ano_publi INT NOT NULL,
+    num_pag INT NOT NULL,
+    FK_GENERO INT NOT NULL,
+    CONSTRAINT CH_FK_GENERO FOREIGN KEY (FK_GENERO)
+    REFERENCES GENERO(IDGENERO)
+);
+ 
+CREATE TABLE leitor (
+    idleitor INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(45) NOT NULL,
+    email VARCHAR(145) NOT NULL,
+    cidade VARCHAR(45) NOT NULL
+);
+ 
+CREATE TABLE clube (
+    idclube INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(45) NOT NULL,
+    data_criacao DATE NOT NULL
+);
+ 
+CREATE TABLE clube_leitor (
+    FK_CLUBE INT NOT NULL,
+    FK_LEITOR INT NOT NULL,
+    data_ingresso DATE NOT NULL,
+    qtd_encontros INT NOT NULL,
+    PRIMARY KEY (FK_CLUBE, FK_LEITOR),
+    CONSTRAINT CH_FK_CLUBE FOREIGN KEY (FK_CLUBE)
+    REFERENCES CLUBE(IDCLUBE),
+    CONSTRAINT CH_FK_LEITOR FOREIGN KEY (FK_LEITOR)
+    REFERENCES LEITOR(IDLEITOR)
+);
+ 
+INSERT INTO genero (nome) VALUES
+('Romance'),
+('Ficção Científica'),
+('Fantasia');
+ 
+INSERT INTO livro (titulo, ano_publi, num_pag, FK_GENERO) VALUES
+('Dom Casmurro', 1899, 256, 1),
+('A Hora da Estrela', 1977, 96, 1),
+('Duna', 1965, 612, 2),
+('Fundação', 1951, 255, 2),
+('Neuromancer', 1984, 320, 2),
+('O Hobbit', 2016, 310, 3),
+('A Guerra dos Tronos', 2015, 592, 3),
+('Os Dias Perfeitos', 2018, 168, 1),
+('Perdido em Marte', 2017, 384, 2);
+ 
+INSERT INTO leitor (nome, email, cidade) VALUES
+('Ana Souza', 'ana.souza@email.com', 'São Paulo'),
+('Bruno Lima', 'bruno.lima@email.com', 'Itaquaquecetuba'),
+('Carla Mendes', 'carla.mendes@email.com', 'Guarulhos'),
+('Diego Alves', 'diego.alves@email.com', 'São Paulo'),
+('Elisa Rocha', 'elisa.rocha@email.com', 'Suzano'),
+('Fábio Costa', 'fabio.costa@email.com', 'Itaquaquecetuba');
+ 
+INSERT INTO clube (nome, data_criacao) VALUES
+('Clube dos Clássicos', '2020-03-15'),
+('Clube Sci-Fi', '2021-08-10'),
+('Clube da Fantasia', '2022-05-22');
+ 
+INSERT INTO clube_leitor (FK_CLUBE, FK_LEITOR, data_ingresso, qtd_encontros) VALUES
+(1, 1, '2020-04-01', 12),
+(1, 2, '2021-02-10', 8),
+(1, 3, '2022-06-05', 5),
+(2, 1, '2021-09-01', 10),
+(2, 3, '2021-10-12', 7),
+(2, 4, '2022-01-20', 9),
+(2, 5, '2023-03-14', 4),
+(3, 2, '2022-06-01', 6),
+(3, 4, '2023-01-18', 3);
+ 
+SELECT * FROM LIVRO;
+ 
+SELECT
+    LEITOR.NOME AS "NOME DO LEITOR",
+    CLUBE.NOME AS "CLUBE",
+    DATE_FORMAT(CLUBE_LEITOR.DATA_INGRESSO, '%d/%m/%Y') AS "DATA DE INGRESSO"
+FROM LEITOR
+JOIN CLUBE_LEITOR ON CLUBE_LEITOR.FK_LEITOR = LEITOR.IDLEITOR
+JOIN CLUBE ON CLUBE_LEITOR.FK_CLUBE = CLUBE.IDCLUBE;
+ 
+SELECT
+    LIVRO.TITULO AS "TÍTULO DO LIVRO",
+    LIVRO.ANO_PUBLI AS "ANO DE PUBLICAÇÃO",
+    LIVRO.NUM_PAG AS "PÁGINAS",
+    GENERO.NOME AS "GÊNERO"
+FROM LIVRO
+JOIN GENERO ON LIVRO.FK_GENERO = GENERO.IDGENERO
+WHERE LIVRO.ANO_PUBLI >= 2015
+AND LIVRO.TITULO LIKE "%a%"
+ORDER BY LIVRO.NUM_PAG ASC;
+ 
+SELECT
+    COUNT(LIVRO.IDLIVRO) AS "QUANTIDADE DE LIVROS",
+    MIN(LIVRO.NUM_PAG) AS "MENOR Nº DE PÁGINAS",
+    MAX(LIVRO.NUM_PAG) AS "MAIOR Nº DE PÁGINAS",
+    ROUND(AVG(LIVRO.NUM_PAG), 1) AS "MÉDIA DE PÁGINAS"
+FROM LIVRO;
+ 
+SELECT
+    CLUBE.NOME AS "CLUBE",
+    COUNT(CLUBE_LEITOR.FK_LEITOR) AS "QUANTIDADE DE LEITORES"
+FROM CLUBE
+LEFT JOIN CLUBE_LEITOR ON CLUBE_LEITOR.FK_CLUBE = CLUBE.IDCLUBE
+GROUP BY CLUBE.IDCLUBE, CLUBE.NOME;
+ 
+SELECT
+    LEITOR.NOME AS "NOME DO LEITOR",
+    COUNT(CLUBE_LEITOR.FK_CLUBE) AS "QUANTIDADE DE CLUBES"
+FROM LEITOR
+LEFT JOIN CLUBE_LEITOR ON CLUBE_LEITOR.FK_LEITOR = LEITOR.IDLEITOR
+GROUP BY LEITOR.IDLEITOR, LEITOR.NOME;
+ 
+SELECT
+    CLUBE.NOME AS "CLUBE",
+    COUNT(CLUBE_LEITOR.FK_LEITOR) AS "QUANTIDADE DE LEITORES",
+    TRUNCATE(AVG(CLUBE_LEITOR.QTD_ENCONTROS), 1) AS "MÉDIA DE ENCONTROS"
+FROM CLUBE
+JOIN CLUBE_LEITOR ON CLUBE_LEITOR.FK_CLUBE = CLUBE.IDCLUBE
+GROUP BY CLUBE.IDCLUBE, CLUBE.NOME;

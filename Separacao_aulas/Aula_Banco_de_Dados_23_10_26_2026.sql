@@ -116,3 +116,14 @@ select truncate( avg(preco),2) from produto; -- remover casas decimais
 
 select ceil(avg(preco)) from produto; -- arredondar casas decimais para cima
 select floor(avg(preco)) from produto; -- arredondar casas decimais para baixo
+
+-- valor mínimo dentre os preços dos produtos
+
+select min(preco) from produto; -- minimo 
+select max(preco) from produto; -- máximo
+
+-- quantidade de produtos diferentes que tenho;
+select count(distinct nome) from produto; -- nomes diferentes na tabela produto
+
+-- função de potência
+select pow(10,3);
